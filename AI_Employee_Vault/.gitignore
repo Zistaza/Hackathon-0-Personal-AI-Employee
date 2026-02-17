@@ -1,0 +1,24 @@
+# Obsidian
+.obsidian/
+
+# Logs
+Logs/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+
+# Environment files
+.env
+.env.*
+credentials.json
+*.session
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db
