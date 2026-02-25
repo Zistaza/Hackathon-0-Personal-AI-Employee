@@ -1,0 +1,22 @@
+{
+  "name": "linkedin-post",
+  "version": "1.0.0",
+  "description": "Generates LinkedIn posts using company tone and posts with approval workflow",
+  "entrypoint": "index.js",
+  "triggers": {
+    "manual": true,
+    "schedule": "0 9 * * *"
+  },
+  "permissions": {
+    "filesystem": {
+      "read": true,
+      "write": true
+    },
+    "network": true,
+    "browser": true
+  },
+  "config": {
+    "dryRun": false,
+    "requireApproval": true
+  }
+}

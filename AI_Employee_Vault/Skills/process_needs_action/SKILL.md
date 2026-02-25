@@ -59,46 +59,157 @@ For each file found in `/Needs_Action`, execute the following sub-steps:
 
 **Output**: Structured understanding of what needs to be accomplished
 
-#### 2.3 Create Execution Plan
+#### 2.3 Create Execution Plan (Enhanced)
 
-**Action**: Create a detailed plan file in `/Plans` folder
+**Action**: Create a detailed plan file in `/Plans` folder with comprehensive analysis
 
 **Filename Convention**: `PLAN_<original_filename>.md`
 
 **Example**: If processing `customer-request.md`, create `PLAN_customer-request.md`
 
-**Plan Format**:
+**Enhanced Plan Format**:
 
 ```markdown
 ---
 created: <ISO 8601 timestamp>
-status: completed
+status: pending_review
 source_file: <original filename>
+priority: <low|medium|high|critical>
+estimated_complexity: <simple|moderate|complex>
 ---
 
 ## Objective
 
 <Clear, concise summary of what needs to be accomplished - 2-3 sentences maximum>
 
-## Steps
+## Step-by-Step Checklist
 
-- [x] Step 1: <First action item>
-- [x] Step 2: <Second action item>
-- [x] Step 3: <Third action item>
-- [x] Step 4: <Additional steps as needed>
+- [ ] Step 1: <First action item with specific details>
+- [ ] Step 2: <Second action item with specific details>
+- [ ] Step 3: <Third action item with specific details>
+- [ ] Step 4: <Additional steps as needed>
+- [ ] Step 5: Verify completion and document results
 
-## Notes
+**Success Criteria**:
+- <Measurable outcome 1>
+- <Measurable outcome 2>
+- <Measurable outcome 3>
 
-<Summary of reasoning, considerations, risks, and recommendations - 3-5 sentences>
+## Risk Analysis
+
+### Identified Risks
+
+**Technical Risks**:
+- <Risk 1>: <Description and likelihood>
+- <Risk 2>: <Description and likelihood>
+
+**Business Risks**:
+- <Risk 1>: <Description and impact>
+- <Risk 2>: <Description and impact>
+
+**Operational Risks**:
+- <Risk 1>: <Description and mitigation>
+- <Risk 2>: <Description and mitigation>
+
+### Mitigation Strategies
+
+1. **For <Risk Category>**: <Specific mitigation approach>
+2. **For <Risk Category>**: <Specific mitigation approach>
+3. **Contingency Plan**: <Fallback approach if primary plan fails>
+
+### Risk Level Assessment
+
+**Overall Risk**: <Low|Medium|High|Critical>
+
+**Justification**: <1-2 sentences explaining the risk level>
+
+## Approval Required
+
+**Approval Status**: <Required|Not Required>
+
+**Reason**: <Explanation of why approval is or isn't needed>
+
+**If Approval Required**:
+
+**Approver**: <Role or person who should approve>
+
+**Approval Criteria**:
+- [ ] Budget allocation confirmed (if applicable)
+- [ ] Technical approach validated
+- [ ] Timeline is acceptable
+- [ ] Risk mitigation plan is adequate
+- [ ] Resource availability confirmed
+
+**Estimated Impact**:
+- **Time**: <Estimated duration>
+- **Resources**: <Required resources>
+- **Cost**: <Estimated cost if applicable>
+- **Dependencies**: <Any blocking dependencies>
+
+**Approval Deadline**: <Date by which approval is needed>
+
+**If Not Approved**: <Alternative action or escalation path>
+
+## Implementation Notes
+
+**Key Considerations**:
+- <Important consideration 1>
+- <Important consideration 2>
+- <Important consideration 3>
+
+**Dependencies**:
+- <External dependency 1>
+- <External dependency 2>
+
+**Assumptions**:
+- <Assumption 1>
+- <Assumption 2>
+
+**Recommendations**:
+- <Recommendation 1>
+- <Recommendation 2>
 ```
 
 **Requirements**:
 - Use ISO 8601 timestamp format: `YYYY-MM-DDTHH:MM:SSZ`
-- Status must be set to "completed" (analysis phase is complete)
-- All steps should be marked with `[x]` (checkboxes checked)
-- Objective should be clear and actionable
-- Steps should be specific and sequential
-- Notes should capture key reasoning and considerations
+- Status must be set to "pending_review" (awaiting human review)
+- All checklist items should be unchecked `[ ]` initially
+- Objective should be clear, specific, and actionable
+- Steps should be sequential and detailed enough to execute
+- Risk analysis must identify at least 2-3 potential risks
+- Approval section must evaluate if human approval is needed
+- Success criteria must be measurable and specific
+
+**Approval Decision Logic**:
+
+Approval is **REQUIRED** if any of the following conditions are met:
+- Financial impact exceeds defined threshold
+- Changes affect production systems
+- Involves customer-facing changes
+- Requires access to sensitive data
+- Has high or critical risk level
+- Involves third-party integrations
+- Requires resource allocation beyond normal capacity
+
+Approval is **NOT REQUIRED** if:
+- Internal documentation updates
+- Low-risk routine tasks
+- Pre-approved standard procedures
+- Emergency fixes (with post-approval review)
+
+**Validation Before File Creation**:
+1. Verify `/Plans` directory exists (create if missing)
+2. Check if plan file already exists (avoid overwriting)
+3. Validate all required sections are populated
+4. Ensure risk analysis has at least one risk identified
+5. Confirm approval decision is justified
+
+**Error Handling**:
+- If plan creation fails, log detailed error
+- Do NOT proceed to step 2.4 (copy to Pending_Approval)
+- Do NOT proceed to step 2.7 (move to Done)
+- Keep original file in `/Needs_Action` for retry
+- Create error log entry with failure details
 
 #### 2.4 Copy Plan to Pending_Approval
 
@@ -144,24 +255,34 @@ cp /Plans/PLAN_<filename>.md /Pending_Approval/PLAN_<filename>.md
 
 **Action**: Write structured log entry to `/Logs/YYYY-MM-DD.json`
 
+**Timing**: Execute AFTER successful plan creation, BEFORE moving file to Done
+
 **Filename Convention**: Use current date in format `YYYY-MM-DD.json`
 
 **Example**: `2026-02-18.json`
 
-**Log Entry Format**:
+**Enhanced Log Entry Format**:
 
 ```json
 {
   "timestamp": "<ISO 8601 timestamp>",
-  "action_type": "process_file",
-  "file": "<original filename>",
-  "plan_created": "PLAN_<original filename>.md",
+  "action_type": "plan_created",
+  "source_file": "<original filename>",
+  "plan_file": "PLAN_<original filename>.md",
   "result": "success",
+  "plan_metadata": {
+    "priority": "<low|medium|high|critical>",
+    "complexity": "<simple|moderate|complex>",
+    "approval_required": "<true|false>",
+    "risk_level": "<Low|Medium|High|Critical>",
+    "objective_summary": "<brief one-line summary>"
+  },
   "details": {
     "source_folder": "/Needs_Action",
-    "destination_folder": "/Done",
-    "plan_location": "/Pending_Approval",
-    "analysis_summary": "<brief summary of what was analyzed>"
+    "plan_location": "/Plans",
+    "pending_approval_location": "/Pending_Approval",
+    "risks_identified": <number of risks>,
+    "steps_count": <number of steps in checklist>
   }
 }
 ```
@@ -278,19 +399,42 @@ append_log_entry "$LOG_FILE" "$NEW_ENTRY"
 ]
 ```
 
-#### 2.7 Move Original File to Done
+#### 2.7 Move Original File to Done (Enhanced)
 
 **Action**: Move the processed file from `/Needs_Action` to `/Done`
+
+**Critical Requirement**: This step MUST ONLY execute after:
+1. ✓ Plan file successfully created in `/Plans`
+2. ✓ Plan file successfully copied to `/Pending_Approval`
+3. ✓ Log entry successfully written to `/Logs`
 
 **Command**:
 ```bash
 mv /Needs_Action/<filename>.md /Done/<filename>.md
 ```
 
-**Validation**:
+**Pre-Move Validation Checklist**:
+- [ ] Verify plan file exists: `/Plans/PLAN_<filename>.md`
+- [ ] Verify plan copy exists: `/Pending_Approval/PLAN_<filename>.md`
+- [ ] Verify log entry written: `/Logs/YYYY-MM-DD.json` contains entry
+- [ ] Verify all required plan sections are populated
+- [ ] Confirm no errors occurred in previous steps
+
+**Post-Move Validation**:
 - Verify file exists in `/Done`
 - Verify file no longer exists in `/Needs_Action`
 - Preserve all file metadata and timestamps
+
+**Failure Handling**:
+If ANY of the pre-move validations fail:
+- DO NOT move the file
+- Log detailed error with failed validation
+- Keep file in `/Needs_Action` for retry
+- Create error log entry
+- Continue processing next file
+
+**Rationale**:
+This sequencing ensures that if plan creation fails, the original file remains in `/Needs_Action` for retry. This prevents data loss and maintains workflow integrity.
 
 ---
 
@@ -369,13 +513,37 @@ After successful execution:
 - Do not move or modify the problematic file
 - Flag for manual review
 
-### Scenario 2: Plan Creation Failure
-**Symptom**: Cannot create plan file in `/Plans`
+### Scenario 2: Plan Creation Failure (Enhanced)
+**Symptom**: Cannot create plan file in `/Plans` or plan validation fails
 **Action**:
-- Log error with details
-- Do not move original file from `/Needs_Action`
-- Retry once, then skip if still failing
-- Flag for manual review
+- Log detailed error with specific failure reason:
+  - Missing required sections
+  - Invalid risk analysis
+  - Approval decision not justified
+  - File write permission issues
+- Do NOT copy plan to `/Pending_Approval`
+- Do NOT create log entry for successful processing
+- Do NOT move original file from `/Needs_Action`
+- Create error log entry with details
+- Retry once with fresh analysis
+- If retry fails, skip and flag for manual review
+- Preserve original file in `/Needs_Action` for human intervention
+
+**Error Log Entry Format**:
+```json
+{
+  "timestamp": "<ISO 8601 timestamp>",
+  "action_type": "plan_creation_failed",
+  "source_file": "<original filename>",
+  "result": "error",
+  "error_details": {
+    "error_type": "<validation_failed|write_failed|analysis_failed>",
+    "error_message": "<specific error description>",
+    "retry_attempted": "<true|false>",
+    "requires_manual_review": true
+  }
+}
+```
 
 ### Scenario 3: Log Write Failure
 **Symptom**: Cannot write to log file
@@ -455,6 +623,18 @@ cat Dashboard.md
 ---
 
 ## Version History
+
+**v2.0** (2026-02-23)
+- Enhanced plan creation with comprehensive structure
+- Added Risk Analysis section with technical, business, and operational risks
+- Added Approval Required section with decision logic and criteria
+- Added Step-by-Step Checklist with success criteria
+- Enhanced metadata: priority, complexity, risk level
+- Updated workflow sequencing: plan creation MUST succeed before file movement
+- Enhanced error handling for plan validation failures
+- Updated JSON logging to include plan metadata
+- Added pre-move validation checklist
+- Improved error scenarios with detailed recovery procedures
 
 **v1.0** (2026-02-18)
 - Initial implementation

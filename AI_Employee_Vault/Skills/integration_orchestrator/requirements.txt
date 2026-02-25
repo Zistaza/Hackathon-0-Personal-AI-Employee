@@ -1,0 +1,7 @@
+# Integration Orchestrator Dependencies
+
+# Filesystem monitoring
+watchdog>=3.0.0
+
+# Optional: Better process management
+psutil>=5.9.0

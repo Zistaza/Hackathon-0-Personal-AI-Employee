@@ -1,0 +1,37 @@
+{
+  "watchers": {
+    "gmail": {
+      "enabled": true,
+      "check_interval": 300,
+      "keywords": ["invoice", "urgent", "payment", "proposal", "contract"],
+      "max_results": 10,
+      "credentials_file": "../../credentials.json",
+      "token_file": "./gmail_token.pickle"
+    },
+    "whatsapp": {
+      "enabled": true,
+      "check_interval": 300,
+      "keywords": ["invoice", "urgent", "payment", "proposal"],
+      "headless": false,
+      "max_messages_per_chat": 20,
+      "user_data_dir": "./whatsapp_session"
+    },
+    "linkedin": {
+      "enabled": true,
+      "check_interval": 600,
+      "keywords": ["job", "opportunity", "interview", "proposal", "project"],
+      "headless": false,
+      "monitor_messages": true,
+      "monitor_notifications": true,
+      "user_data_dir": "./linkedin_session"
+    }
+  },
+  "paths": {
+    "needs_action_dir": "../../Needs_Action",
+    "logs_dir": "../../Logs"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "linkedin-post-skill",
+  "version": "1.0.0",
+  "description": "Generates and posts LinkedIn content with approval workflow",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "generate": "node index.js generate",
+    "post": "node index.js process"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Session data (contains authentication tokens)
+whatsapp_session/
+
+# Processed messages tracking (contains chat metadata)
+processed_ids.json
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

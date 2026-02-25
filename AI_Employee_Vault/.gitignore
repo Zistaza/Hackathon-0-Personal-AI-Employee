@@ -1,6 +1,9 @@
 # Obsidian
 .obsidian/
 
+# Claude
+.claude/
+
 # Logs
 Logs/
 *.log
@@ -12,11 +15,15 @@ __pycache__/
 *.pyd
 venv/
 
+# Node
+node_modules/
+
 # Environment files
 .env
 .env.*
 credentials.json
 *.session
+*.pickle
 secrets.json
 
 # OS

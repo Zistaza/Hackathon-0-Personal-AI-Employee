@@ -1,0 +1,39 @@
+{
+  "name": "integration-orchestrator",
+  "version": "1.0.0",
+  "description": "Central automation controller for AI Employee Vault",
+  "entrypoint": "index.py",
+  "type": "orchestrator",
+  "tier": "Gold",
+  "triggers": {
+    "filesystem": true,
+    "periodic": true,
+    "manual": true
+  },
+  "monitors": [
+    "Inbox",
+    "Needs_Action",
+    "Pending_Approval"
+  ],
+  "integrates_with": [
+    "process_needs_action",
+    "linkedin_post_skill",
+    "whatsapp_watcher_skill",
+    "gmail_watcher_skill"
+  ],
+  "permissions": {
+    "filesystem": {
+      "read": true,
+      "write": true,
+      "watch": true
+    },
+    "process": {
+      "spawn": true
+    }
+  },
+  "config": {
+    "check_interval": 1,
+    "skill_timeout": 300,
+    "retry_on_failure": true
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "keywords": [
+    "invoice",
+    "urgent",
+    "payment",
+    "proposal"
+  ],
+  "paths": {
+    "needsActionDir": "../../Needs_Action",
+    "logsDir": "../../Logs",
+    "processedIdsFile": "./processed_ids.json",
+    "userDataDir": "./whatsapp_session"
+  },
+  "browser": {
+    "headless": false,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "retry": {
+    "maxRetries": 3,
+    "retryDelay": 5000
+  },
+  "scanning": {
+    "maxMessagesPerChat": 20,
+    "waitAfterClick": 2000,
+    "loginTimeout": 120000
+  }
+}

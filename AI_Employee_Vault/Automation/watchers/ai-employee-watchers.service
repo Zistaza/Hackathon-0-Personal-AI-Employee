@@ -1,0 +1,25 @@
+[Unit]
+Description=AI Employee Watchers
+After=network.target
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/AI_Employee_Vault/Automation/watchers
+ExecStart=/usr/bin/python3 run_all_watchers.py
+Restart=always
+RestartSec=10
+StandardOutput=append:/home/%i/AI_Employee_Vault/Logs/watchers_service.log
+StandardError=append:/home/%i/AI_Employee_Vault/Logs/watchers_service.log
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/%i/AI_Employee_Vault/Needs_Action
+ReadWritePaths=/home/%i/AI_Employee_Vault/Logs
+ReadWritePaths=/home/%i/AI_Employee_Vault/Automation/watchers
+
+[Install]
+WantedBy=multi-user.target

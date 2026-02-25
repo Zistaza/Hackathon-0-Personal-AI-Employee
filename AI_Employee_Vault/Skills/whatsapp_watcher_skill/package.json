@@ -1,0 +1,15 @@
+{
+  "name": "whatsapp-watcher-skill",
+  "version": "1.0.0",
+  "description": "Monitors WhatsApp Web for keyword-matching messages",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

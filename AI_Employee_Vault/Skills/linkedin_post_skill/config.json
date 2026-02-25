@@ -1,0 +1,22 @@
+{
+  "paths": {
+    "handbookPath": "../../Company_Handbook.md",
+    "pendingApprovalDir": "../../Pending_Approval",
+    "postedDir": "../../Posted",
+    "logsDir": "../../Logs",
+    "userDataDir": "./linkedin_session"
+  },
+  "browser": {
+    "headless": false,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "dryRun": false,
+  "postDefaults": {
+    "includeHashtags": true,
+    "defaultHashtags": ["#Business", "#Leadership", "#Innovation"],
+    "maxLength": 3000
+  }
+}

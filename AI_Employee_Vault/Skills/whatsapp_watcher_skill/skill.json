@@ -1,0 +1,26 @@
+{
+  "name": "whatsapp-watcher",
+  "version": "1.0.0",
+  "description": "Monitors WhatsApp Web for unread messages containing specific keywords and creates action items",
+  "entrypoint": "index.js",
+  "triggers": {
+    "schedule": "*/5 * * * *"
+  },
+  "permissions": {
+    "filesystem": {
+      "read": true,
+      "write": true
+    },
+    "network": true,
+    "mcp": ["browsing-with-playwright"]
+  },
+  "config": {
+    "keywords": ["invoice", "urgent", "payment", "proposal"],
+    "needsActionDir": "../../Needs_Action",
+    "logsDir": "../../Logs",
+    "processedIdsFile": "./processed_ids.json",
+    "userDataDir": "./whatsapp_session",
+    "maxRetries": 3,
+    "retryDelay": 5000
+  }
+}
