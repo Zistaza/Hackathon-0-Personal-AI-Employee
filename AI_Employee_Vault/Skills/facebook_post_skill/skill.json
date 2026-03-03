@@ -1,0 +1,36 @@
+{
+  "name": "facebook-post",
+  "version": "2.0.0",
+  "description": "Posts to Facebook with enterprise validation, moderation, and engagement tracking",
+  "entrypoint": "index.py",
+  "triggers": {
+    "manual": true,
+    "event": ["social_post_requested", "facebook_post_requested"],
+    "schedule": null
+  },
+  "permissions": {
+    "filesystem": {
+      "read": true,
+      "write": true
+    },
+    "network": true,
+    "browser": false
+  },
+  "config": {
+    "requireApproval": true,
+    "moderationThreshold": 0.5,
+    "maxRetries": 3,
+    "dryRun": false
+  },
+  "dependencies": {
+    "integration_orchestrator": ">=2.0.0"
+  },
+  "enterprise_features": [
+    "content_validation",
+    "content_moderation",
+    "engagement_tracking",
+    "idempotent_execution",
+    "audit_logging",
+    "report_generation"
+  ]
+}

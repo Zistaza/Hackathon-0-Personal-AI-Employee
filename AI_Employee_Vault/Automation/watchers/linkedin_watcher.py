@@ -102,32 +102,59 @@ class LinkedInWatcher(BaseWatcher):
 
             # Navigate to LinkedIn
             self.logger.info("Navigating to LinkedIn...")
-            await self.page.goto('https://www.linkedin.com', wait_until='networkidle')
+            await self.page.goto('https://www.linkedin.com/feed/', wait_until='domcontentloaded', timeout=60000)
 
             # Wait for LinkedIn to load
             try:
-                # Wait for either login form or feed
-                await self.page.wait_for_selector(
-                    'input[name="session_key"], [data-test-id="feed-container"]',
-                    timeout=30000
-                )
+                # Wait for page to load
+                self.logger.info("Waiting for LinkedIn to load...")
+                await asyncio.sleep(8)  # Give page time to render
 
-                # Check if login is required
-                login_form = await self.page.query_selector('input[name="session_key"]')
+                # Check current URL and title to determine if logged in
+                current_url = self.page.url
+                title = await self.page.title()
 
-                if login_form:
-                    self.logger.warning("Login required - please login manually")
+                self.logger.info(f"Current URL: {current_url}")
+                self.logger.info(f"Page title: {title}")
+
+                # If we're on the feed page, we're logged in
+                if '/feed' in current_url and 'LinkedIn' in title:
+                    # Verify by checking for navigation (which exists when logged in)
+                    nav = await self.page.query_selector('nav')
+                    if nav:
+                        self.logger.info("Already logged in via saved session")
+                        self.logger.info("LinkedIn connection established")
+                        return True
+
+                # Check if we got redirected to login page
+                if '/login' in current_url or 'Sign In' in title or 'Join now' in title:
+                    self.logger.warning("Login required - please login manually in the browser")
                     self.logger.info("Waiting for login (up to 5 minutes)...")
-                    await self.page.wait_for_selector('[data-test-id="feed-container"]', timeout=300000)
-                    self.logger.info("Login successful!")
-                else:
-                    self.logger.info("Already logged in via saved session")
 
-                # Additional wait for full load
-                await self.page.wait_for_timeout(2000)
+                    # Wait for successful login by checking URL change
+                    for i in range(60):  # Check every 5 seconds for 5 minutes
+                        await asyncio.sleep(5)
+                        current_url = self.page.url
+                        title = await self.page.title()
 
-                self.logger.info("LinkedIn connection established")
-                return True
+                        if '/feed' in current_url and 'LinkedIn' in title:
+                            nav = await self.page.query_selector('nav')
+                            if nav:
+                                self.logger.info("Login successful!")
+                                self.logger.info("LinkedIn connection established")
+                                return True
+
+                    self.logger.error("Login timeout - please try again")
+                    return False
+
+                # Try to find navigation as fallback check
+                nav = await self.page.wait_for_selector('nav', timeout=10000)
+                if nav:
+                    self.logger.info("LinkedIn connection established")
+                    return True
+
+                self.logger.error("Could not verify LinkedIn login")
+                return False
 
             except Exception as e:
                 self.logger.error(f"Failed to load LinkedIn: {e}")

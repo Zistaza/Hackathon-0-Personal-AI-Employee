@@ -1,0 +1,95 @@
+{
+  "processed_events": {},
+  "system_state": {
+    "test_key": "test_value",
+    "_health_check": "2026-03-03T00:47:21.193819",
+    "last_startup": "2026-03-02T20:34:13.940949Z",
+    "orchestrator_version": "gold_tier_v1.0_refactored",
+    "last_shutdown": "2026-02-26T22:58:37.819995Z",
+    "autonomous_executor_last_check": "2026-03-03T00:47:08.699504Z",
+    "engagement_facebook_fb_372de4714949_1772376656": {
+      "likes": 286,
+      "comments": 40,
+      "shares": 16,
+      "reach": 2474,
+      "engagement_rate": 13.82,
+      "tracked_at": "2026-03-01T19:50:56.502491"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772376656": {
+      "likes": 321,
+      "retweets": 80,
+      "replies": 2,
+      "views": 14938,
+      "engagement_rate": 2.7,
+      "tracked_at": "2026-03-01T19:50:56.750673"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772376657": {
+      "likes": 99,
+      "comments": 29,
+      "saves": 5,
+      "reach": 3348,
+      "engagement_rate": 3.97,
+      "tracked_at": "2026-03-01T19:50:57.065911"
+    },
+    "scheduled_posts": {},
+    "engagement_facebook_fb_372de4714949_1772483654": {
+      "likes": 145,
+      "comments": 24,
+      "shares": 14,
+      "reach": 2391,
+      "engagement_rate": 7.65,
+      "tracked_at": "2026-03-02T20:34:14.023569+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772483654": {
+      "likes": 27,
+      "retweets": 30,
+      "replies": 42,
+      "views": 5027,
+      "engagement_rate": 1.97,
+      "tracked_at": "2026-03-02T20:34:14.187543+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772483654": {
+      "likes": 84,
+      "comments": 29,
+      "saves": 16,
+      "reach": 2725,
+      "engagement_rate": 4.73,
+      "tracked_at": "2026-03-02T20:34:14.475251+00:00"
+    }
+  },
+  "metrics": {
+    "test_counter": {
+      "value": 1,
+      "updated_at": "2026-02-26T22:03:23.635593Z"
+    },
+    "total_startups": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:13.978590Z"
+    },
+    "total_posts_facebook": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.030297Z"
+    },
+    "successful_posts_facebook": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.068740Z"
+    },
+    "total_posts_twitter_x": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.195006Z"
+    },
+    "successful_posts_twitter_x": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.239680Z"
+    },
+    "total_posts_instagram": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.481532Z"
+    },
+    "successful_posts_instagram": {
+      "value": 2,
+      "updated_at": "2026-03-02T20:34:14.524794Z"
+    }
+  },
+  "last_updated": "2026-03-03T00:47:21.193857Z"
+}

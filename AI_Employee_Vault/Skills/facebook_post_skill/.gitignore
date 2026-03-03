@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Session data
+facebook_session/
+*.session
+
+# Credentials
+credentials.json
+.env
+*.key
+*.pem
+
+# Reports (optional - uncomment if you don't want to track reports)
+# Reports/
+
+# Test outputs
+test_output/
+*.test.json

@@ -64,11 +64,15 @@ class WhatsAppWatcher(BaseWatcher):
         try:
             self.logger.info("Initializing WhatsApp Web connection...")
 
-            # Run async initialization
-            loop = asyncio.get_event_loop()
-            success = loop.run_until_complete(self._async_initialize())
-
-            return success
+            # Run async initialization with new event loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                success = loop.run_until_complete(self._async_initialize())
+                return success
+            finally:
+                # Don't close the loop, we'll reuse it
+                pass
 
         except Exception as e:
             self.logger.error(f"Error initializing WhatsApp Web: {e}")
@@ -80,15 +84,36 @@ class WhatsAppWatcher(BaseWatcher):
             # Create user data directory
             self.user_data_dir.mkdir(parents=True, exist_ok=True)
 
+            # Check if session exists
+            session_exists = (self.user_data_dir / "Default").exists()
+
+            if not session_exists and self.headless:
+                self.logger.error("=" * 80)
+                self.logger.error("NO WHATSAPP SESSION FOUND")
+                self.logger.error("Cannot run in headless mode without an existing session.")
+                self.logger.error("Please run the authentication script first:")
+                self.logger.error("  python debug_whatsapp.py")
+                self.logger.error("Or run the watcher with headless=False to authenticate.")
+                self.logger.error("=" * 80)
+                return False
+
             # Launch Playwright
             self.playwright = await async_playwright().start()
 
-            # Launch browser with persistent context
+            # Launch browser with persistent context and anti-detection flags
             self.context = await self.playwright.chromium.launch_persistent_context(
                 user_data_dir=str(self.user_data_dir),
                 headless=self.headless,
                 viewport={'width': 1280, 'height': 720},
-                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-dev-shm-usage',
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-web-security',
+                    '--disable-features=IsolateOrigins,site-per-process'
+                ]
             )
 
             # Get or create page
@@ -97,34 +122,152 @@ class WhatsAppWatcher(BaseWatcher):
             else:
                 self.page = await self.context.new_page()
 
+            # Hide automation indicators
+            await self.page.add_init_script("""
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined
+                });
+            """)
+
             # Navigate to WhatsApp Web
             self.logger.info("Navigating to WhatsApp Web...")
-            await self.page.goto('https://web.whatsapp.com', wait_until='networkidle')
+
+            # Try loading multiple times if needed
+            for attempt in range(3):
+                try:
+                    await self.page.goto('https://web.whatsapp.com', wait_until='load', timeout=60000)
+                    await asyncio.sleep(5)
+
+                    # Check if page has any content
+                    body_content = await self.page.content()
+                    if len(body_content) > 1000:  # Page has substantial content
+                        break
+
+                    self.logger.warning(f"Page seems empty, attempt {attempt + 1}/3")
+                    if attempt < 2:
+                        await self.page.reload()
+                except Exception as e:
+                    self.logger.warning(f"Load attempt {attempt + 1} failed: {e}")
+                    if attempt < 2:
+                        await asyncio.sleep(3)
 
             # Wait for WhatsApp to load
             try:
-                # Wait for either QR code or chat list
-                await self.page.wait_for_selector(
-                    'canvas[aria-label="Scan me!"], [data-testid="chat-list"]',
-                    timeout=30000
-                )
+                # Wait for page to load
+                self.logger.info("Waiting for WhatsApp to load...")
 
-                # Check if QR code is present
-                qr_code = await self.page.query_selector('canvas[aria-label="Scan me!"]')
+                # First wait for the main app container
+                await self.page.wait_for_selector('[id="app"]', timeout=30000)
+                self.logger.info("WhatsApp app container loaded")
 
-                if qr_code:
-                    self.logger.warning("QR code detected - please scan to login")
-                    self.logger.info("Waiting for login (up to 2 minutes)...")
-                    await self.page.wait_for_selector('[data-testid="chat-list"]', timeout=120000)
-                    self.logger.info("Login successful!")
-                else:
+                # Give WhatsApp extra time to render content (it loads very slowly)
+                self.logger.info("Waiting for WhatsApp content to render (20 seconds)...")
+                await asyncio.sleep(20)
+
+                # Now check what's on the page - try multiple selectors
+                # Check for chat pane (means logged in)
+                chat_selectors = [
+                    '[id="pane-side"]',
+                    '[data-testid="chat-list"]',
+                    'div[role="grid"]',  # Chat list grid
+                    'div[aria-label*="Chat"]',
+                ]
+
+                chat_found = False
+                for selector in chat_selectors:
+                    element = await self.page.query_selector(selector)
+                    if element:
+                        self.logger.info(f"Found chat element: {selector}")
+                        chat_found = True
+                        break
+
+                if chat_found:
                     self.logger.info("Already logged in via saved session")
+                    self.logger.info("WhatsApp Web connection established")
+                    return True
 
-                # Additional wait for full load
-                await self.page.wait_for_timeout(3000)
+                # If no chat pane, look for QR code or login area
+                self.logger.info("No chat pane found, checking for QR code...")
 
-                self.logger.info("WhatsApp Web connection established")
-                return True
+                # Check for QR code with multiple methods
+                qr_selectors = [
+                    'canvas',
+                    'div[data-ref]',
+                    'div[role="button"][data-icon="qr"]',
+                ]
+
+                qr_found = False
+                for selector in qr_selectors:
+                    element = await self.page.query_selector(selector)
+                    if element:
+                        try:
+                            is_visible = await element.is_visible()
+                            if is_visible:
+                                self.logger.info(f"Found QR code element: {selector}")
+                                qr_found = True
+                                break
+                        except:
+                            continue
+
+                if qr_found:
+                    self.logger.warning("QR code detected - please scan with your phone NOW")
+                    self.logger.info("Waiting for login (up to 3 minutes)...")
+
+                    # Poll for chat pane to appear (indicates successful login)
+                    for i in range(36):  # Check every 5 seconds for 3 minutes
+                        await asyncio.sleep(5)
+
+                        # Check all chat selectors
+                        for selector in chat_selectors:
+                            element = await self.page.query_selector(selector)
+                            if element:
+                                self.logger.info("Login successful!")
+                                self.logger.info("WhatsApp Web connection established")
+                                return True
+
+                    self.logger.error("Login timeout - please scan QR code and try again")
+                    return False
+
+                # If we can't find chat pane or QR code, wait longer and take a screenshot
+                self.logger.warning("Could not detect WhatsApp login state clearly")
+                self.logger.info("Waiting additional 15 seconds for QR code to fully render...")
+                await asyncio.sleep(15)
+
+                self.logger.info("Taking screenshot for debugging...")
+                screenshot_path = self.user_data_dir / "auth_debug.png"
+                await self.page.screenshot(path=str(screenshot_path))
+                self.logger.info(f"Screenshot saved to: {screenshot_path}")
+                self.logger.info("=" * 80)
+                self.logger.info("SCAN THE QR CODE NOW!")
+                self.logger.info(f"Location: {screenshot_path}")
+                self.logger.info("Open WhatsApp on your phone -> Settings -> Linked Devices -> Link a Device")
+                self.logger.info("You have 2 minutes to scan the code...")
+                self.logger.info("=" * 80)
+
+                # Poll for login every 5 seconds for 2 minutes
+                for i in range(24):  # 24 * 5 = 120 seconds
+                    await asyncio.sleep(5)
+
+                    # Check if logged in
+                    for selector in chat_selectors:
+                        element = await self.page.query_selector(selector)
+                        if element:
+                            self.logger.info("✓ Login successful!")
+                            self.logger.info("WhatsApp Web connection established")
+                            return True
+
+                    if i % 6 == 0:  # Log every 30 seconds
+                        self.logger.info(f"Still waiting... ({(i+1)*5} seconds elapsed)")
+
+                # Final check with all selectors
+                for selector in chat_selectors:
+                    element = await self.page.query_selector(selector)
+                    if element:
+                        self.logger.info("WhatsApp Web connection established")
+                        return True
+
+                self.logger.error("Could not establish WhatsApp connection")
+                return False
 
             except Exception as e:
                 self.logger.error(f"Failed to load WhatsApp Web: {e}")
@@ -137,8 +280,11 @@ class WhatsAppWatcher(BaseWatcher):
     def check_for_events(self) -> List[Dict]:
         """Check for new WhatsApp messages"""
         try:
-            # Run async check
+            # Run async check with existing event loop
             loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
             events = loop.run_until_complete(self._async_check_for_events())
             return events
 
@@ -264,9 +410,15 @@ class WhatsAppWatcher(BaseWatcher):
         try:
             self.logger.info("Cleaning up WhatsApp watcher...")
 
-            # Run async cleanup
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self._async_cleanup())
+            # Run async cleanup with existing event loop
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_closed():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+                loop.run_until_complete(self._async_cleanup())
+            except Exception as e:
+                self.logger.error(f"Error in async cleanup: {e}")
 
         except Exception as e:
             self.logger.error(f"Error during cleanup: {e}")

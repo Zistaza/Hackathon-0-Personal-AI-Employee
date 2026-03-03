@@ -29,3 +29,10 @@ secrets.json
 # OS
 .DS_Store
 Thumbs.db
+
+# Browser automation cache
+**/Cache/
+**/cache/
+**/Cache_Data/
+**/*_session/
+**/*session/

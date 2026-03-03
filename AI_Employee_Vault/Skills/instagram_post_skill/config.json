@@ -1,0 +1,27 @@
+{
+  "platform": "instagram",
+  "api": {
+    "enabled": false,
+    "simulation_mode": true,
+    "success_rate": 0.93
+  },
+  "validation": {
+    "max_length": 2200,
+    "max_media": 10,
+    "min_media": 1,
+    "check_prohibited_words": true
+  },
+  "moderation": {
+    "enabled": true,
+    "threshold": 0.5,
+    "block_on_high_risk": true
+  },
+  "engagement": {
+    "track_metrics": true,
+    "generate_reports": true
+  },
+  "reports": {
+    "enabled": true,
+    "directory": "Reports/Social/Instagram"
+  }
+}

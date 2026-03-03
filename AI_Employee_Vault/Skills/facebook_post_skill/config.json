@@ -1,0 +1,26 @@
+{
+  "platform": "facebook",
+  "api": {
+    "enabled": false,
+    "simulation_mode": true,
+    "success_rate": 0.95
+  },
+  "validation": {
+    "max_length": 63206,
+    "max_media": 10,
+    "check_prohibited_words": true
+  },
+  "moderation": {
+    "enabled": true,
+    "threshold": 0.5,
+    "block_on_high_risk": true
+  },
+  "engagement": {
+    "track_metrics": true,
+    "generate_reports": true
+  },
+  "reports": {
+    "enabled": true,
+    "directory": "Reports/Social/Facebook"
+  }
+}

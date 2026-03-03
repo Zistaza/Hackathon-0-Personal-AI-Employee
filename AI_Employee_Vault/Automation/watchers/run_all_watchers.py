@@ -16,6 +16,9 @@ sys.path.insert(0, str(Path(__file__).parent))
 from gmail_watcher import GmailWatcher
 from whatsapp_watcher import WhatsAppWatcher
 from linkedin_watcher import LinkedInWatcher
+from facebook_watcher import FacebookWatcher
+from instagram_watcher import InstagramWatcher
+from twitter_watcher import TwitterWatcher
 
 
 class WatcherManager:
@@ -87,6 +90,48 @@ class WatcherManager:
         except Exception as e:
             print(f"Failed to start LinkedIn watcher: {e}")
 
+        # Start Facebook Watcher
+        try:
+            self.start_watcher(
+                FacebookWatcher,
+                "Facebook",
+                check_interval=600,
+                keywords=["urgent", "important", "invoice", "payment", "proposal"],
+                headless=True,
+                monitor_notifications=True,
+                monitor_messages=True
+            )
+        except Exception as e:
+            print(f"Failed to start Facebook watcher: {e}")
+
+        # Start Instagram Watcher
+        try:
+            self.start_watcher(
+                InstagramWatcher,
+                "Instagram",
+                check_interval=600,
+                keywords=["urgent", "important", "collab", "partnership", "business"],
+                headless=True,
+                monitor_notifications=True,
+                monitor_messages=True
+            )
+        except Exception as e:
+            print(f"Failed to start Instagram watcher: {e}")
+
+        # Start Twitter/X Watcher
+        try:
+            self.start_watcher(
+                TwitterWatcher,
+                "Twitter",
+                check_interval=600,
+                keywords=["urgent", "important", "mention", "dm", "message"],
+                headless=True,
+                monitor_notifications=True,
+                monitor_messages=True
+            )
+        except Exception as e:
+            print(f"Failed to start Twitter watcher: {e}")
+
         print()
         print(f"Started {len(self.processes)} watcher(s)")
         print("Press Ctrl+C to stop all watchers")
@@ -111,13 +156,98 @@ class WatcherManager:
 
     def monitor(self):
         """Monitor running watchers and restart if needed"""
+        restart_config = {
+            'Gmail': {
+                'class': GmailWatcher,
+                'kwargs': {
+                    'check_interval': 300,
+                    'keywords': ["invoice", "urgent", "payment", "proposal"],
+                    'max_results': 10
+                }
+            },
+            'WhatsApp': {
+                'class': WhatsAppWatcher,
+                'kwargs': {
+                    'check_interval': 300,
+                    'keywords': ["invoice", "urgent", "payment", "proposal"],
+                    'headless': True,
+                    'max_messages_per_chat': 20
+                }
+            },
+            'LinkedIn': {
+                'class': LinkedInWatcher,
+                'kwargs': {
+                    'check_interval': 600,
+                    'keywords': ["job", "opportunity", "interview", "proposal", "project"],
+                    'headless': True,
+                    'monitor_messages': True,
+                    'monitor_notifications': True
+                }
+            },
+            'Facebook': {
+                'class': FacebookWatcher,
+                'kwargs': {
+                    'check_interval': 600,
+                    'keywords': ["urgent", "important", "invoice", "payment", "proposal"],
+                    'headless': True,
+                    'monitor_notifications': True,
+                    'monitor_messages': True
+                }
+            },
+            'Instagram': {
+                'class': InstagramWatcher,
+                'kwargs': {
+                    'check_interval': 600,
+                    'keywords': ["urgent", "important", "collab", "partnership", "business"],
+                    'headless': True,
+                    'monitor_notifications': True,
+                    'monitor_messages': True
+                }
+            },
+            'Twitter': {
+                'class': TwitterWatcher,
+                'kwargs': {
+                    'check_interval': 600,
+                    'keywords': ["urgent", "important", "mention", "dm", "message"],
+                    'headless': True,
+                    'monitor_notifications': True,
+                    'monitor_messages': True
+                }
+            }
+        }
+
         try:
             while self.running:
                 # Check if any process died
                 for i, process in enumerate(self.processes):
                     if not process.is_alive():
-                        print(f"Warning: {process.name} watcher died, restarting...")
-                        # Could implement restart logic here
+                        name = process.name
+                        print(f"Warning: {name} watcher died (exit code: {process.exitcode})")
+
+                        # Don't restart if it was terminated intentionally
+                        if process.exitcode == -15 or process.exitcode == -9:
+                            continue
+
+                        # Get restart config
+                        if name in restart_config:
+                            config = restart_config[name]
+                            print(f"Restarting {name} watcher...")
+
+                            # Remove old process
+                            self.processes.pop(i)
+
+                            # Start new process
+                            try:
+                                self.start_watcher(
+                                    config['class'],
+                                    name,
+                                    **config['kwargs']
+                                )
+                                print(f"Successfully restarted {name} watcher")
+                            except Exception as e:
+                                print(f"Failed to restart {name} watcher: {e}")
+
+                        break  # Break to restart loop with updated process list
 
                 time.sleep(10)
 
