@@ -144,22 +144,142 @@ class EventRouter:
         return True
 
     def _handle_approved(self, filepath: Path) -> bool:
-        """Handle file moved to Approved - Execute email and move to Done - Enhanced with Gold Tier"""
+        """Handle file moved to Approved - Execute plan or email - Enhanced with Gold Tier"""
         try:
-            # Check if email sending is enabled (graceful degradation)
-            if self.graceful_degradation and not self.graceful_degradation.is_feature_enabled('email_sending'):
-                self.logger.warning(f"Email sending disabled (degraded mode), skipping: {filepath.name}")
-                return False
+            # Check if this is a PLAN file or EMAIL approval
+            if filepath.name.startswith('PLAN_'):
+                return self._handle_approved_plan(filepath)
+            else:
+                return self._handle_approved_email(filepath)
 
-            # Generate approval ID
-            approval_id = self.approval_manager.get_approval_hash(filepath)
+        except Exception as e:
+            self.logger.error(f"Error handling approved file: {e}")
+            return False
+
+    def _handle_approved_plan(self, filepath: Path) -> bool:
+        """Handle approved plan - Execute accounting or other domain actions"""
+        try:
+            self.logger.info(f"Processing approved plan: {filepath.name}")
+
+            # Generate approval ID (use filename and action type)
+            approval_id = self.approval_manager.get_approval_hash(filepath.name, 'plan_execution')
 
             # Check if already processed
             if self.approval_manager.is_processed(approval_id):
                 self.logger.warning(f"Approval already processed: {filepath.name}")
                 return True
 
+            # Publish event
+            if self.event_bus:
+                self.event_bus.publish('plan_approved', {
+                    'filepath': str(filepath),
+                    'filename': filepath.name,
+                    'timestamp': datetime.utcnow().isoformat() + 'Z'
+                })
+
+            # Read plan file
+            with open(filepath, 'r') as f:
+                content = f.read()
+
+            # Parse plan metadata
+            plan_data = self._parse_plan_metadata(content)
+
+            if not plan_data:
+                self.logger.error(f"Failed to parse plan metadata from {filepath.name}")
+                return False
+
+            source_file = plan_data.get('source_file')
+            if not source_file:
+                self.logger.error(f"No source_file in plan metadata: {filepath.name}")
+                return False
+
+            # Load original request from Done folder
+            done_dir = self.base_dir / "Done"
+            source_path = done_dir / source_file
+
+            if not source_path.exists():
+                self.logger.error(f"Source file not found: {source_path}")
+                return False
+
+            # Read original request
+            with open(source_path, 'r') as f:
+                original_content = f.read()
+
+            # Parse original request data
+            request_data = self._parse_request_data(original_content)
+
+            if not request_data:
+                self.logger.error(f"Failed to parse request data from {source_file}")
+                return False
+
+            # Determine action based on request type
+            request_type = request_data.get('type', '')
+
+            if request_type == 'invoice_request':
+                # Execute accounting skill
+                result = self._execute_invoice_request(request_data)
+
+                if result:
+                    self.logger.info(f"Invoice processed successfully: {request_data.get('client')}")
+
+                    # Mark as processed
+                    self.approval_manager.mark_processed(approval_id, {
+                        'filename': filepath.name,
+                        'source_file': source_file,
+                        'type': request_type,
+                        'status': 'executed'
+                    })
+
+                    # Move plan to Done
+                    done_path = done_dir / filepath.name
+                    shutil.move(str(filepath), str(done_path))
+                    self.logger.info(f"Moved plan to Done: {filepath.name}")
+
+                    return True
+                else:
+                    self.logger.error("Invoice processing failed")
+                    return False
+            else:
+                self.logger.warning(f"Unknown request type: {request_type}")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"Error handling approved plan: {e}", exc_info=True)
+            return False
+
+    def _handle_approved_email(self, filepath: Path) -> bool:
+        """Handle approved email - Send email and move to Done"""
+        try:
+            # Check if email sending is enabled (graceful degradation)
+            if self.graceful_degradation and not self.graceful_degradation.is_feature_enabled('email_sending'):
+                self.logger.warning(f"Email sending disabled (degraded mode), skipping: {filepath.name}")
+                return False
+
             self.logger.info(f"Processing approved email: {filepath.name}")
+
+            # Read approval file
+            with open(filepath, 'r') as f:
+                content = f.read()
+
+            # Parse email data from file
+            email_data = self._parse_email_approval(content)
+
+            if not email_data:
+                self.logger.error(f"Failed to parse email data from {filepath.name}")
+                return False
+
+            # Validate required fields
+            if email_data.get('action') != 'send_email':
+                self.logger.warning(f"Not an email action: {email_data.get('action')}")
+                return False
+
+            # Generate approval ID
+            approval_id = self.approval_manager.get_approval_hash(filepath.name, 'send_email')
+
+            # Check if already processed
+            if self.approval_manager.is_processed(approval_id):
+                self.logger.warning(f"Approval already processed: {filepath.name}")
+                return True
 
             # Publish event
             if self.event_bus:
@@ -299,6 +419,124 @@ class EventRouter:
         except Exception as e:
             self.logger.error(f"Error parsing email approval: {e}")
             return None
+
+    def _parse_plan_metadata(self, content: str) -> Optional[Dict]:
+        """Parse metadata from plan file (YAML frontmatter)"""
+        try:
+            metadata = {}
+
+            # Extract YAML frontmatter between --- markers
+            if content.startswith('---'):
+                parts = content.split('---', 2)
+                if len(parts) >= 3:
+                    frontmatter = parts[1].strip()
+
+                    # Parse YAML-like content
+                    for line in frontmatter.split('\n'):
+                        line = line.strip()
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            metadata[key.strip()] = value.strip()
+
+            return metadata if metadata else None
+
+        except Exception as e:
+            self.logger.error(f"Error parsing plan metadata: {e}")
+            return None
+
+    def _parse_request_data(self, content: str) -> Optional[Dict]:
+        """Parse data from original request file (YAML frontmatter)"""
+        try:
+            request_data = {}
+
+            # Extract YAML frontmatter between --- markers
+            if content.startswith('---'):
+                parts = content.split('---', 2)
+                if len(parts) >= 3:
+                    frontmatter = parts[1].strip()
+
+                    # Parse YAML-like content
+                    for line in frontmatter.split('\n'):
+                        line = line.strip()
+                        if ':' in line:
+                            key, value = line.split(':', 1)
+                            request_data[key.strip()] = value.strip()
+
+            return request_data if request_data else None
+
+        except Exception as e:
+            self.logger.error(f"Error parsing request data: {e}")
+            return None
+
+    def _execute_invoice_request(self, request_data: Dict) -> bool:
+        """Execute invoice request via accounting skill"""
+        try:
+            client = request_data.get('client', 'Unknown')
+            amount_str = request_data.get('amount', '0')
+            reason = request_data.get('reason', 'Invoice')
+
+            # Convert amount to float
+            try:
+                amount = float(amount_str)
+            except ValueError:
+                self.logger.error(f"Invalid amount: {amount_str}")
+                return False
+
+            self.logger.info(f"Executing invoice: {client} - ${amount}")
+
+            # Publish event
+            if self.event_bus:
+                self.event_bus.publish('invoice_executing', {
+                    'client': client,
+                    'amount': amount,
+                    'reason': reason,
+                    'timestamp': datetime.utcnow().isoformat() + 'Z'
+                })
+
+            # Execute accounting skill via SkillRegistry
+            if self.skill_registry:
+                result = self.skill_registry.execute_skill(
+                    "accounting_core",
+                    ["add-revenue",
+                     "--amount", str(amount),
+                     "--category", client,
+                     "--description", reason]
+                )
+
+                if result.get('success'):
+                    self.logger.info(f"Accounting skill executed successfully")
+
+                    # Publish accounting_transaction_added event for cross-domain integration
+                    if self.event_bus:
+                        self.event_bus.publish('accounting_transaction_added', {
+                            'transaction_id': f"invoice_{client}_{amount}",
+                            'type': 'revenue',
+                            'amount': amount,
+                            'category': client,
+                            'status': 'finalized',
+                            'timestamp': datetime.utcnow().isoformat() + 'Z'
+                        })
+                        self.logger.info(f"Published accounting_transaction_added event")
+
+                    # Publish success event
+                    if self.event_bus:
+                        self.event_bus.publish('invoice_completed', {
+                            'client': client,
+                            'amount': amount,
+                            'timestamp': datetime.utcnow().isoformat() + 'Z'
+                        })
+
+                    return True
+                else:
+                    self.logger.error(f"Accounting skill failed: {result.get('error')}")
+                    return False
+            else:
+                self.logger.error("SkillRegistry not available")
+                return False
+
+        except Exception as e:
+            self.logger.error(f"Error executing invoice request: {e}", exc_info=True)
+            return False
 
     def _handle_inbox(self, filepath: Path) -> bool:
         """Handle new file in Inbox"""

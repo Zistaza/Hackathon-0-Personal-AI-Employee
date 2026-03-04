@@ -36,3 +36,13 @@ Thumbs.db
 **/Cache_Data/
 **/*_session/
 **/*session/
+
+# Runtime Generated Vault Data
+Approved/
+Done/
+Plans/
+Pending_Approval/
+Reports/
+Data/ledger_backup.json
+Data/resilience_test/
+Skills/**/temp/

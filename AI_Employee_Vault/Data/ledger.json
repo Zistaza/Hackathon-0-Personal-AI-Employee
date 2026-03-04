@@ -23,12 +23,67 @@
       "status": "finalized",
       "created_at": "2026-02-27T21:53:52.541970Z",
       "metadata": {}
+    },
+    {
+      "id": "e9d9f7ee1668e7d5",
+      "type": "revenue",
+      "amount": 750.0,
+      "category": "Test Client 2",
+      "description": "Cross domain test - second attempt",
+      "date": "2026-03-03T22:53:18.509133Z",
+      "status": "finalized",
+      "created_at": "2026-03-03T22:53:18.509315Z",
+      "metadata": {}
+    },
+    {
+      "id": "5e772bd5d50ed539",
+      "type": "revenue",
+      "amount": 1000.0,
+      "category": "Test Client 3",
+      "description": "Final cross-domain test with reporting",
+      "date": "2026-03-03T23:15:03.709883Z",
+      "status": "finalized",
+      "created_at": "2026-03-03T23:15:03.710038Z",
+      "metadata": {}
+    },
+    {
+      "id": "ec95a7bc4fea410a",
+      "type": "revenue",
+      "amount": 500.0,
+      "category": "Test Client 4",
+      "description": "Testing automatic report generation",
+      "date": "2026-03-03T23:19:09.553435Z",
+      "status": "finalized",
+      "created_at": "2026-03-03T23:19:09.553704Z",
+      "metadata": {}
+    },
+    {
+      "id": "ef9349939466a409",
+      "type": "revenue",
+      "amount": 100.0,
+      "category": "Chain Verification Test",
+      "description": "Live automation chain test",
+      "date": "2026-03-04T00:37:54.339270Z",
+      "status": "finalized",
+      "created_at": "2026-03-04T00:37:54.339477Z",
+      "metadata": {}
+    },
+    {
+      "id": "0fe09de803f3556a",
+      "type": "revenue",
+      "amount": 500.0,
+      "category": "MCP Final Verification",
+      "description": "Confirm MCP execution with enum fix",
+      "date": "2026-03-04T00:55:54.136660Z",
+      "status": "finalized",
+      "created_at": "2026-03-04T00:55:54.136724Z",
+      "metadata": {}
     }
   ],
   "metadata": {
-    "total_revenue": 2000.0,
+    "total_revenue": 4850.0,
     "total_expenses": 10000.0,
-    "transaction_count": 2,
-    "last_updated": "2026-02-27T21:53:52.542035Z"
+    "transaction_count": 7,
+    "last_updated": "2026-03-04T00:55:54.136742Z"
   }
 }

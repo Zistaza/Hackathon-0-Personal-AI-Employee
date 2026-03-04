@@ -59,6 +59,7 @@ try:
         StateManager,
         ApprovalManager,
         CircuitBreakerManager,
+        MCPServerManager,
     )
     from .skills import (
         SkillDispatcher,
@@ -86,6 +87,7 @@ except ImportError:
         StateManager,
         ApprovalManager,
         CircuitBreakerManager,
+        MCPServerManager,
     )
     from Skills.integration_orchestrator.skills import (
         SkillDispatcher,
@@ -133,7 +135,7 @@ except ImportError:
     print("Warning: psutil not installed. System resource monitoring will be limited.")
 
 try:
-    from watchdog.observers import Observer
+    from watchdog.observers.polling import PollingObserver
     from watchdog.events import FileSystemEventHandler, FileSystemEvent
 except ImportError:
     print("Error: watchdog not installed")
@@ -204,6 +206,7 @@ class IntegrationOrchestrator:
         self.circuit_breaker_manager = None
         self.autonomous_executor = None
         self.social_adapter = None
+        self.mcp_manager = None
 
         # Running state
         self.running = False
@@ -291,15 +294,27 @@ class IntegrationOrchestrator:
         self.audit_logger = AuditLogger(self.logs_dir, self.logger)
         self.logger.info("AuditLogger initialized")
 
-        # Skill Registry (wraps existing dispatcher)
+        # MCP Server Manager (initialize before SkillRegistry)
+        self.mcp_manager = MCPServerManager(
+            logger=self.logger,
+            event_bus=self.event_bus,
+            retry_queue=self.retry_queue,
+            audit_logger=self.audit_logger,
+            base_dir=self.base_dir
+        )
+        self.mcp_manager.initialize_servers()
+        self.logger.info(f"MCPServerManager initialized with {len(self.mcp_manager.list_servers())} servers")
+
+        # Skill Registry (wraps existing dispatcher with MCP support)
         self.skill_registry = SkillRegistry(
             self.dispatcher,
             self.event_bus,
             self.retry_queue,
             self.audit_logger,
-            self.logger
+            self.logger,
+            mcp_manager=self.mcp_manager
         )
-        self.logger.info("SkillRegistry initialized")
+        self.logger.info("SkillRegistry initialized with MCP support")
 
         # Graceful Degradation
         self.graceful_degradation = GracefulDegradation(self.health_monitor, self.logger)
@@ -591,10 +606,27 @@ class IntegrationOrchestrator:
             if queue_size > 10:
                 self.logger.warning(f"Retry queue is large: {queue_size} items")
 
+        def on_accounting_transaction_added(data):
+            """Cross-domain: Accounting → Reporting integration"""
+            self.logger.info(f"Ledger updated: {data.get('type')} ${data.get('amount')} - Triggering report generation")
+
+            # Trigger weekly CEO briefing to regenerate with new data
+            try:
+                result = self.skill_registry.execute_skill('weekly_ceo_briefing', ['generate'])
+                if result.get('success'):
+                    self.logger.info("Weekly CEO briefing regenerated successfully")
+                else:
+                    self.logger.warning(f"Failed to regenerate briefing: {result.get('error')}")
+            except Exception as e:
+                self.logger.error(f"Error triggering report generation: {e}")
+
         # Subscribe to events
         self.event_bus.subscribe('skill_execution_started', log_skill_execution)
         self.event_bus.subscribe('skill_execution_completed', log_skill_completed)
         self.event_bus.subscribe('retry_queue_status', check_retry_queue)
+
+        # Cross-domain integration: Accounting → Reporting
+        self.event_bus.subscribe('accounting_transaction_added', on_accounting_transaction_added)
 
         self.logger.info("Event subscriptions configured")
 
@@ -606,6 +638,9 @@ class IntegrationOrchestrator:
         # Check autonomous executor status
         autonomous_active = self.autonomous_executor and self.autonomous_executor.running
 
+        # Get MCP server count
+        mcp_servers = len(self.mcp_manager.list_servers()) if self.mcp_manager else 0
+
         # Build banner
         banner = []
         banner.append("=" * 60)
@@ -615,6 +650,7 @@ class IntegrationOrchestrator:
         banner.append("RetryQueue: CENTRALIZED")
         banner.append("Circuit Breaker: CENTRALIZED")
         banner.append("EventBus: ACTIVE")
+        banner.append(f"MCP Servers: {mcp_servers} ACTIVE")
         banner.append(f"Skills Registered: {skill_count}")
         banner.append("=" * 60)
 
@@ -638,8 +674,8 @@ class IntegrationOrchestrator:
         self.periodic_trigger.start()
         self.autonomous_executor.start()
 
-        # Setup filesystem watchers
-        self.observer = Observer()
+        # Setup filesystem watchers (using PollingObserver for WSL2 compatibility)
+        self.observer = PollingObserver()
 
         # Watch monitored directories
         folders_to_watch = [

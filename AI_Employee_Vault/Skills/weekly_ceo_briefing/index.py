@@ -106,11 +106,13 @@ class WeeklyCEOBriefing:
         if date is None:
             date = datetime.utcnow()
 
-        return date.strftime('%Y-W%U')
+        # Use %V for ISO week number (Monday as first day of week)
+        # This ensures consistent week numbering
+        return date.strftime('%Y-W%V')
 
     def _get_week_range(self, week_id: str) -> Tuple[datetime, datetime]:
         """
-        Get date range for a week identifier
+        Get date range for a week identifier (ISO week)
 
         Args:
             week_id: Week identifier (YYYY-WXX)
@@ -125,13 +127,17 @@ class WeeklyCEOBriefing:
         year = int(year)
         week = int(week)
 
-        # Calculate start of week (Sunday)
-        jan1 = datetime(year, 1, 1, tzinfo=timezone.utc)
-        days_to_sunday = (7 - jan1.weekday()) % 7
-        first_sunday = jan1 + timedelta(days=days_to_sunday)
-        week_start = first_sunday + timedelta(weeks=week)
+        # ISO week calculation: Week 1 is the week with the first Thursday
+        # Find January 4th (always in week 1)
+        jan4 = datetime(year, 1, 4, tzinfo=timezone.utc)
 
-        # End of week (Saturday)
+        # Find Monday of week 1
+        week1_monday = jan4 - timedelta(days=jan4.weekday())
+
+        # Calculate start of target week (Monday)
+        week_start = week1_monday + timedelta(weeks=week - 1)
+
+        # End of week (Sunday)
         week_end = week_start + timedelta(days=6, hours=23, minutes=59, seconds=59)
 
         return week_start, week_end
