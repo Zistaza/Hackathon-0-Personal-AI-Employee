@@ -17,10 +17,16 @@
       "filepath": "/mnt/c/Users/Tesla Laptops/Desktop/AI_Employee_Vault/AI_Employee_Vault/Needs_Action/TEST_MCP_FINAL.md",
       "filename": "TEST_MCP_FINAL.md",
       "processed_at": "2026-03-04T00:55:42.562844Z"
+    },
+    "rejected_created_4b21eda30afb0ad86751407ba465c2a1": {
+      "event_type": "rejected_created",
+      "filepath": "/mnt/c/Users/Tesla Laptops/Desktop/AI_Employee_Vault/AI_Employee_Vault/Rejected/POST_facebook_1772733135.md",
+      "filename": "POST_facebook_1772733135.md",
+      "processed_at": "2026-03-05T23:14:18.132498Z"
     }
   },
   "system_state": {
-    "_health_check": "2026-03-04T01:07:01.989372",
+    "_health_check": "2026-03-06T01:30:37.589043",
     "engagement_facebook_fb_372de4714949_1772585485": {
       "likes": 277,
       "comments": 28,
@@ -29,7 +35,7 @@
       "engagement_rate": 18.15,
       "tracked_at": "2026-03-04T00:51:25.412322+00:00"
     },
-    "last_startup": "2026-03-04T00:53:59.838536Z",
+    "last_startup": "2026-03-05T22:11:17.621332Z",
     "orchestrator_version": "gold_tier_v1.0_refactored",
     "engagement_twitter_x_tw_372de4714949_1772585486": {
       "likes": 90,
@@ -47,7 +53,7 @@
       "engagement_rate": 9.29,
       "tracked_at": "2026-03-04T00:51:26.967712+00:00"
     },
-    "autonomous_executor_last_check": "2026-03-04T01:07:18.517416Z",
+    "autonomous_executor_last_check": "2026-03-06T01:31:12.524247Z",
     "engagement_facebook_fb_372de4714949_1772585489": {
       "likes": 308,
       "comments": 36,
@@ -120,37 +126,386 @@
       "reach": 1583,
       "engagement_rate": 20.91,
       "tracked_at": "2026-03-04T00:54:01.052335+00:00"
-    }
+    },
+    "engagement_facebook_fb_372de4714949_1772654599": {
+      "likes": 25,
+      "comments": 46,
+      "shares": 14,
+      "reach": 1256,
+      "engagement_rate": 6.77,
+      "tracked_at": "2026-03-04T20:03:19.199936+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772654599": {
+      "likes": 485,
+      "retweets": 20,
+      "replies": 16,
+      "views": 17987,
+      "engagement_rate": 2.9,
+      "tracked_at": "2026-03-04T20:03:19.468034+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772654600": {
+      "likes": 142,
+      "comments": 28,
+      "saves": 8,
+      "reach": 1553,
+      "engagement_rate": 11.46,
+      "tracked_at": "2026-03-04T20:03:20.459853+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772670469": {
+      "likes": 305,
+      "comments": 24,
+      "shares": 1,
+      "reach": 2417,
+      "engagement_rate": 13.65,
+      "tracked_at": "2026-03-05T00:27:49.437860+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772670469": {
+      "likes": 337,
+      "retweets": 84,
+      "replies": 5,
+      "views": 16213,
+      "engagement_rate": 2.63,
+      "tracked_at": "2026-03-05T00:27:49.789950+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772670470": {
+      "likes": 129,
+      "comments": 26,
+      "saves": 2,
+      "reach": 3116,
+      "engagement_rate": 5.04,
+      "tracked_at": "2026-03-05T00:27:50.189911+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772670742": {
+      "likes": 391,
+      "comments": 11,
+      "shares": 12,
+      "reach": 1357,
+      "engagement_rate": 30.51,
+      "tracked_at": "2026-03-05T00:32:22.282431+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772670742": {
+      "likes": 276,
+      "retweets": 57,
+      "replies": 22,
+      "views": 15527,
+      "engagement_rate": 2.29,
+      "tracked_at": "2026-03-05T00:32:22.647277+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772670743": {
+      "likes": 115,
+      "comments": 8,
+      "saves": 15,
+      "reach": 1116,
+      "engagement_rate": 12.37,
+      "tracked_at": "2026-03-05T00:32:23.064578+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772670786": {
+      "likes": 339,
+      "comments": 24,
+      "shares": 25,
+      "reach": 506,
+      "engagement_rate": 76.68,
+      "tracked_at": "2026-03-05T00:33:06.573006+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772670786": {
+      "likes": 646,
+      "retweets": 60,
+      "replies": 24,
+      "views": 17935,
+      "engagement_rate": 4.07,
+      "tracked_at": "2026-03-05T00:33:06.883741+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772670787": {
+      "likes": 261,
+      "comments": 8,
+      "saves": 2,
+      "reach": 849,
+      "engagement_rate": 31.92,
+      "tracked_at": "2026-03-05T00:33:07.255314+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772741361": {
+      "likes": 318,
+      "comments": 45,
+      "shares": 18,
+      "reach": 2311,
+      "engagement_rate": 16.49,
+      "tracked_at": "2026-03-05T20:09:21.886304+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772741362": {
+      "likes": 658,
+      "retweets": 23,
+      "replies": 11,
+      "views": 16375,
+      "engagement_rate": 4.23,
+      "tracked_at": "2026-03-05T20:09:22.167946+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772741824": {
+      "likes": 425,
+      "comments": 35,
+      "shares": 24,
+      "reach": 2542,
+      "engagement_rate": 19.04,
+      "tracked_at": "2026-03-05T20:17:04.648116+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772741824": {
+      "likes": 433,
+      "retweets": 91,
+      "replies": 39,
+      "views": 12745,
+      "engagement_rate": 4.42,
+      "tracked_at": "2026-03-05T20:17:04.835136+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772741825": {
+      "likes": 341,
+      "comments": 33,
+      "saves": 9,
+      "reach": 3268,
+      "engagement_rate": 11.72,
+      "tracked_at": "2026-03-05T20:17:05.188948+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772742494": {
+      "likes": 46,
+      "comments": 16,
+      "shares": 6,
+      "reach": 1334,
+      "engagement_rate": 5.1,
+      "tracked_at": "2026-03-05T20:28:14.398461+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772742496": {
+      "likes": 503,
+      "retweets": 44,
+      "replies": 23,
+      "views": 12114,
+      "engagement_rate": 4.71,
+      "tracked_at": "2026-03-05T20:28:16.193946+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772742502": {
+      "likes": 308,
+      "comments": 11,
+      "saves": 5,
+      "reach": 313,
+      "engagement_rate": 103.51,
+      "tracked_at": "2026-03-05T20:28:22.302550+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772747584": {
+      "likes": 391,
+      "comments": 6,
+      "shares": 13,
+      "reach": 4552,
+      "engagement_rate": 9.01,
+      "tracked_at": "2026-03-05T21:53:04.838280+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772747585": {
+      "likes": 260,
+      "retweets": 11,
+      "replies": 8,
+      "views": 8153,
+      "engagement_rate": 3.42,
+      "tracked_at": "2026-03-05T21:53:05.202751+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772747585": {
+      "likes": 341,
+      "comments": 7,
+      "saves": 7,
+      "reach": 1890,
+      "engagement_rate": 18.78,
+      "tracked_at": "2026-03-05T21:53:05.637359+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748097": {
+      "likes": 73,
+      "comments": 38,
+      "shares": 22,
+      "reach": 3434,
+      "engagement_rate": 3.87,
+      "tracked_at": "2026-03-05T22:01:37.188925+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748097": {
+      "likes": 632,
+      "retweets": 59,
+      "replies": 20,
+      "views": 999,
+      "engagement_rate": 71.17,
+      "tracked_at": "2026-03-05T22:01:37.542428+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748097": {
+      "likes": 193,
+      "comments": 14,
+      "saves": 0,
+      "reach": 576,
+      "engagement_rate": 35.94,
+      "tracked_at": "2026-03-05T22:01:37.948280+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748132": {
+      "likes": 161,
+      "comments": 13,
+      "shares": 10,
+      "reach": 975,
+      "engagement_rate": 18.87,
+      "tracked_at": "2026-03-05T22:02:12.106807+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748132": {
+      "likes": 563,
+      "retweets": 17,
+      "replies": 31,
+      "views": 9676,
+      "engagement_rate": 6.31,
+      "tracked_at": "2026-03-05T22:02:12.761061+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748133": {
+      "likes": 332,
+      "comments": 5,
+      "saves": 10,
+      "reach": 1321,
+      "engagement_rate": 26.27,
+      "tracked_at": "2026-03-05T22:02:13.894758+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748139": {
+      "likes": 225,
+      "comments": 12,
+      "shares": 14,
+      "reach": 1763,
+      "engagement_rate": 14.24,
+      "tracked_at": "2026-03-05T22:02:19.563861+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748140": {
+      "likes": 27,
+      "retweets": 73,
+      "replies": 9,
+      "views": 13940,
+      "engagement_rate": 0.78,
+      "tracked_at": "2026-03-05T22:02:20.053890+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748140": {
+      "likes": 135,
+      "comments": 26,
+      "saves": 6,
+      "reach": 2808,
+      "engagement_rate": 5.95,
+      "tracked_at": "2026-03-05T22:02:20.560406+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748250": {
+      "likes": 310,
+      "comments": 38,
+      "shares": 14,
+      "reach": 1329,
+      "engagement_rate": 27.24,
+      "tracked_at": "2026-03-05T22:04:10.041945+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748250": {
+      "likes": 189,
+      "retweets": 41,
+      "replies": 28,
+      "views": 17174,
+      "engagement_rate": 1.5,
+      "tracked_at": "2026-03-05T22:04:10.685898+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748564": {
+      "likes": 393,
+      "comments": 9,
+      "shares": 15,
+      "reach": 557,
+      "engagement_rate": 74.87,
+      "tracked_at": "2026-03-05T22:09:24.310121+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748564": {
+      "likes": 560,
+      "retweets": 15,
+      "replies": 43,
+      "views": 14767,
+      "engagement_rate": 4.19,
+      "tracked_at": "2026-03-05T22:09:24.795672+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748565": {
+      "likes": 269,
+      "comments": 4,
+      "saves": 2,
+      "reach": 878,
+      "engagement_rate": 31.32,
+      "tracked_at": "2026-03-05T22:09:25.495570+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748568": {
+      "likes": 155,
+      "comments": 26,
+      "shares": 12,
+      "reach": 1615,
+      "engagement_rate": 11.95,
+      "tracked_at": "2026-03-05T22:09:28.807070+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748569": {
+      "likes": 548,
+      "retweets": 67,
+      "replies": 21,
+      "views": 7789,
+      "engagement_rate": 8.17,
+      "tracked_at": "2026-03-05T22:09:29.068771+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748569": {
+      "likes": 162,
+      "comments": 21,
+      "saves": 8,
+      "reach": 633,
+      "engagement_rate": 30.17,
+      "tracked_at": "2026-03-05T22:09:29.416919+00:00"
+    },
+    "engagement_facebook_fb_372de4714949_1772748677": {
+      "likes": 36,
+      "comments": 27,
+      "shares": 8,
+      "reach": 904,
+      "engagement_rate": 7.85,
+      "tracked_at": "2026-03-05T22:11:17.666801+00:00"
+    },
+    "engagement_twitter_x_tw_372de4714949_1772748677": {
+      "likes": 279,
+      "retweets": 87,
+      "replies": 13,
+      "views": 7328,
+      "engagement_rate": 5.17,
+      "tracked_at": "2026-03-05T22:11:17.927239+00:00"
+    },
+    "engagement_instagram_ig_e5e3b5648654_1772748678": {
+      "likes": 287,
+      "comments": 16,
+      "saves": 1,
+      "reach": 267,
+      "engagement_rate": 113.86,
+      "tracked_at": "2026-03-05T22:11:18.300687+00:00"
+    },
+    "last_shutdown": "2026-03-06T01:31:14.423251Z"
   },
   "metrics": {
     "total_posts_facebook": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:53:59.720211Z"
+      "value": 19,
+      "updated_at": "2026-03-05T22:11:17.730329Z"
     },
     "successful_posts_facebook": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:53:59.886133Z"
+      "value": 19,
+      "updated_at": "2026-03-05T22:11:17.792591Z"
     },
     "total_startups": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:53:59.996437Z"
+      "value": 19,
+      "updated_at": "2026-03-05T22:11:17.706848Z"
     },
     "total_posts_twitter_x": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:54:00.135803Z"
+      "value": 19,
+      "updated_at": "2026-03-05T22:11:17.948182Z"
     },
     "successful_posts_twitter_x": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:54:00.321073Z"
+      "value": 19,
+      "updated_at": "2026-03-05T22:11:18.011788Z"
     },
     "total_posts_instagram": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:54:01.072526Z"
+      "value": 17,
+      "updated_at": "2026-03-05T22:11:18.328536Z"
     },
     "successful_posts_instagram": {
-      "value": 4,
-      "updated_at": "2026-03-04T00:54:01.213218Z"
+      "value": 17,
+      "updated_at": "2026-03-05T22:11:18.373540Z"
+    },
+    "failed_posts_instagram": {
+      "value": 2,
+      "updated_at": "2026-03-05T22:04:12.351877Z"
     }
   },
-  "last_updated": "2026-03-04T01:07:18.517426Z"
+  "last_updated": "2026-03-06T01:31:14.423441Z"
 }

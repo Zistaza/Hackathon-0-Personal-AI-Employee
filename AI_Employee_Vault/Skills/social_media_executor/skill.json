@@ -1,0 +1,38 @@
+{
+  "name": "social_media_executor",
+  "version": "2.0.0",
+  "description": "Unified social media posting executor with HITL workflow and persistent sessions",
+  "author": "AI Employee Vault",
+  "tier": "gold",
+  "type": "automation",
+  "platforms": ["linkedin", "facebook", "instagram", "twitter"],
+  "capabilities": [
+    "cross_platform_posting",
+    "persistent_sessions",
+    "media_upload",
+    "retry_logic",
+    "error_recovery",
+    "hitl_workflow"
+  ],
+  "dependencies": {
+    "python": ">=3.8",
+    "playwright": ">=1.40.0"
+  },
+  "integration": {
+    "event_bus": true,
+    "audit_logger": true,
+    "folder_manager": true,
+    "retry_queue": true,
+    "skill_registry": true
+  },
+  "workflow": {
+    "input_folder": "/Approved",
+    "success_folder": "/Done",
+    "failure_folder": "/Failed",
+    "session_folder": "/Sessions"
+  },
+  "execution": {
+    "command": "python3 executor.py",
+    "timeout": 120000
+  }
+}

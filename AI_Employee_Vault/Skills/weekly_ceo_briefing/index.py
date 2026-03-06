@@ -416,8 +416,44 @@ class WeeklyCEOBriefing:
             'status': 'unknown'
         }
 
+    def _get_social_automation_stats(self) -> Dict:
+        """
+        Get social media automation statistics
+
+        Returns:
+            Social automation stats dictionary
+        """
+        stats = {
+            'enabled': False,
+            'posts_executed': 0,
+            'messages_sent': 0,
+            'auto_execution_enabled': False,
+            'monitor_status': 'unknown'
+        }
+
+        if not self.orchestrator:
+            return stats
+
+        try:
+            # Check if FolderManager exists and get stats
+            if hasattr(self.orchestrator, 'folder_manager') and self.orchestrator.folder_manager:
+                folder_stats = self.orchestrator.folder_manager.get_stats()
+                stats['enabled'] = True
+                stats['posts_executed'] = folder_stats.get('done', 0)
+
+            # Check if ApprovedFolderMonitor exists and is running
+            if hasattr(self.orchestrator, 'approved_folder_monitor') and self.orchestrator.approved_folder_monitor:
+                monitor_status = self.orchestrator.approved_folder_monitor.get_status()
+                stats['auto_execution_enabled'] = monitor_status.get('running', False)
+                stats['monitor_status'] = 'active' if monitor_status.get('running') and monitor_status.get('thread_alive') else 'inactive'
+
+        except Exception as e:
+            print(f"Warning: Could not get social automation stats: {e}")
+
+        return stats
+
     def _generate_recommendations(self, accounting: Dict, audit: Dict,
-                                 workflows: Dict, health: Dict, retry: Dict) -> List[str]:
+                                 workflows: Dict, health: Dict, retry: Dict, social: Dict) -> List[str]:
         """
         Generate AI recommendations based on data
 
@@ -427,6 +463,7 @@ class WeeklyCEOBriefing:
             workflows: Workflow status
             health: Health status
             retry: RetryQueue stats
+            social: Social automation stats
 
         Returns:
             List of recommendation strings
@@ -462,6 +499,13 @@ class WeeklyCEOBriefing:
         if audit['skill_failures'] > audit['skill_successes']:
             recommendations.append("⚠️ **More skill failures than successes.** Review error logs and fix failing skills.")
 
+        # Social automation recommendations
+        if social['enabled'] and not social['auto_execution_enabled']:
+            recommendations.append("📱 **Social automation available but auto-execution disabled.** Consider enabling ApprovedFolderMonitor for 24/7 operation.")
+
+        if social['enabled'] and social['posts_executed'] > 0:
+            recommendations.append(f"✅ **Social automation active: {social['posts_executed']} items executed.** System operating autonomously.")
+
         # Positive recommendations
         if accounting['net_profit'] > 0 and len(recommendations) == 0:
             recommendations.append("✅ **Strong performance this week.** Continue current operations.")
@@ -472,7 +516,7 @@ class WeeklyCEOBriefing:
         return recommendations
 
     def _generate_risk_warnings(self, accounting: Dict, audit: Dict,
-                               workflows: Dict, health: Dict, retry: Dict) -> List[str]:
+                               workflows: Dict, health: Dict, retry: Dict, social: Dict) -> List[str]:
         """
         Generate risk warnings
 
@@ -482,6 +526,7 @@ class WeeklyCEOBriefing:
             workflows: Workflow status
             health: Health status
             retry: RetryQueue stats
+            social: Social automation stats
 
         Returns:
             List of risk warning strings
@@ -495,6 +540,10 @@ class WeeklyCEOBriefing:
         # System health risks
         if health['overall_status'] == 'unhealthy':
             warnings.append("🔴 **CRITICAL: System unhealthy.** Core functionality may be impaired.")
+
+        # Social automation risks
+        if social['enabled'] and social['monitor_status'] == 'inactive':
+            warnings.append("⚠️ **WARNING: Social automation monitor inactive.** Approved posts/messages not executing automatically.")
 
         # Escalation risks
         if workflows['escalation_count'] > 5:
@@ -553,12 +602,13 @@ class WeeklyCEOBriefing:
         workflows = self._get_workflow_status()
         health = self._get_system_health()
         retry = self._get_retry_queue_stats()
+        social = self._get_social_automation_stats()
         print("   ✓ Analysis complete")
 
         # Generate insights
         print("\n3. Generating insights...")
-        recommendations = self._generate_recommendations(accounting, audit, workflows, health, retry)
-        warnings = self._generate_risk_warnings(accounting, audit, workflows, health, retry)
+        recommendations = self._generate_recommendations(accounting, audit, workflows, health, retry, social)
+        warnings = self._generate_risk_warnings(accounting, audit, workflows, health, retry, social)
         print(f"   ✓ {len(recommendations)} recommendations")
         print(f"   ✓ {len(warnings)} risk warnings")
 
@@ -573,6 +623,7 @@ class WeeklyCEOBriefing:
             'workflows': workflows,
             'health': health,
             'retry_queue': retry,
+            'social_automation': social,
             'recommendations': recommendations,
             'warnings': warnings
         }
@@ -771,6 +822,15 @@ class WeeklyCEOBriefing:
         md.append(f"**RetryQueue:** {retry['queue_size']} items ({retry['status']})")
         md.append("")
 
+        # Social Automation Status
+        social = briefing['social_automation']
+        if social['enabled']:
+            status_emoji = "✅" if social['auto_execution_enabled'] else "⚠️"
+            md.append(f"{status_emoji} **Social Automation:** {social['posts_executed']} items executed")
+            md.append(f"- **Auto-execution:** {'Enabled' if social['auto_execution_enabled'] else 'Disabled'}")
+            md.append(f"- **Monitor Status:** {social['monitor_status']}")
+            md.append("")
+
         md.append("---")
         md.append("")
 
@@ -792,7 +852,7 @@ class WeeklyCEOBriefing:
         md.append("## Notes")
         md.append("")
         md.append("This report was automatically generated by the weekly_ceo_briefing skill.")
-        md.append("Data sources: Accounting ledger, Audit logs, StateManager, HealthMonitor, RetryQueue.")
+        md.append("Data sources: Accounting ledger, Audit logs, StateManager, HealthMonitor, RetryQueue, Social Automation.")
         md.append("")
         md.append("For detailed information:")
         md.append("- Accounting: `Data/ledger.json`")

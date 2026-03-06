@@ -14,6 +14,7 @@ from .approval_manager import ApprovalManager
 from .circuit_breaker import CircuitBreakerManager, CircuitState
 from .social_config_parser import SocialMediaConfigParser
 from .mcp_manager import MCPServerManager
+from .folder_manager import FolderManager
 
 __all__ = [
     'EventBus',
@@ -28,4 +29,5 @@ __all__ = [
     'CircuitState',
     'SocialMediaConfigParser',
     'MCPServerManager',
+    'FolderManager',
 ]

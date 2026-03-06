@@ -60,6 +60,7 @@ try:
         ApprovalManager,
         CircuitBreakerManager,
         MCPServerManager,
+        FolderManager,
     )
     from .skills import (
         SkillDispatcher,
@@ -74,6 +75,7 @@ try:
         PeriodicTrigger,
         GracefulDegradation,
         AutonomousExecutor,
+        ApprovedFolderMonitor,
     )
 except ImportError:
     # Fall back to absolute imports (when run directly)
@@ -88,6 +90,7 @@ except ImportError:
         ApprovalManager,
         CircuitBreakerManager,
         MCPServerManager,
+        FolderManager,
     )
     from Skills.integration_orchestrator.skills import (
         SkillDispatcher,
@@ -102,6 +105,7 @@ except ImportError:
         PeriodicTrigger,
         GracefulDegradation,
         AutonomousExecutor,
+        ApprovedFolderMonitor,
     )
 
 # Social Media Skills Integration
@@ -163,6 +167,8 @@ __all__ = [
     'PeriodicTrigger',
     'GracefulDegradation',
     'AutonomousExecutor',
+    'FolderManager',
+    'ApprovedFolderMonitor',
 ]
 
 
@@ -207,6 +213,10 @@ class IntegrationOrchestrator:
         self.autonomous_executor = None
         self.social_adapter = None
         self.mcp_manager = None
+        self.folder_manager = None
+        self.social_media_executor = None
+        self.message_sender = None
+        self.approved_folder_monitor = None
 
         # Running state
         self.running = False
@@ -282,6 +292,15 @@ class IntegrationOrchestrator:
         self.event_bus = EventBus(self.logger)
         self.logger.info("EventBus initialized")
 
+        # Folder Manager (initialize early for HITL architecture)
+        self.folder_manager = FolderManager(
+            base_dir=self.base_dir,
+            event_bus=self.event_bus,
+            audit_logger=None,  # Will be set after AuditLogger is initialized
+            logger=self.logger
+        )
+        self.logger.info("FolderManager initialized with HITL architecture")
+
         # Retry Queue
         self.retry_queue = RetryQueue(self.logger, max_retries=5)
         self.logger.info("RetryQueue initialized")
@@ -293,6 +312,11 @@ class IntegrationOrchestrator:
         # Audit Logger
         self.audit_logger = AuditLogger(self.logs_dir, self.logger)
         self.logger.info("AuditLogger initialized")
+
+        # Connect AuditLogger to FolderManager
+        if self.folder_manager:
+            self.folder_manager.audit_logger = self.audit_logger
+            self.logger.info("FolderManager connected to AuditLogger")
 
         # MCP Server Manager (initialize before SkillRegistry)
         self.mcp_manager = MCPServerManager(
@@ -355,6 +379,15 @@ class IntegrationOrchestrator:
 
         # Register social media skills
         self._register_social_media_skills()
+
+        # Register Social Media Executor v2
+        self._register_social_media_executor()
+
+        # Register Message Sender v2
+        self._register_message_sender()
+
+        # Initialize Approved Folder Monitor (Step 5)
+        self._initialize_approved_folder_monitor()
 
         self.logger.info("Gold Tier components initialized successfully")
 
@@ -430,6 +463,74 @@ class IntegrationOrchestrator:
 
         except Exception as e:
             self.logger.error(f"Failed to register social media skills: {e}", exc_info=True)
+
+    def _register_social_media_executor(self):
+        """Register Social Media Executor v2 with SkillRegistry"""
+        try:
+            from Skills.social_media_executor.register import register_executor
+
+            self.social_media_executor = register_executor(
+                skill_registry=self.skill_registry,
+                event_bus=self.event_bus,
+                audit_logger=self.audit_logger,
+                folder_manager=self.folder_manager,
+                logger=self.logger,
+                base_dir=self.base_dir
+            )
+
+            if self.social_media_executor:
+                self.logger.info("Social Media Executor v2 registered successfully")
+            else:
+                self.logger.warning("Social Media Executor v2 registration returned None")
+
+        except Exception as e:
+            self.logger.error(f"Failed to register Social Media Executor v2: {e}", exc_info=True)
+
+    def _register_message_sender(self):
+        """Register Message Sender v2 with SkillRegistry"""
+        try:
+            from Skills.message_sender.register import register_sender
+
+            self.message_sender = register_sender(
+                skill_registry=self.skill_registry,
+                event_bus=self.event_bus,
+                audit_logger=self.audit_logger,
+                folder_manager=self.folder_manager,
+                logger=self.logger,
+                base_dir=self.base_dir
+            )
+
+            if self.message_sender:
+                self.logger.info("Message Sender v2 registered successfully")
+            else:
+                self.logger.warning("Message Sender v2 registration returned None")
+
+        except Exception as e:
+            self.logger.error(f"Failed to register Message Sender v2: {e}", exc_info=True)
+
+    def _initialize_approved_folder_monitor(self):
+        """Initialize Approved Folder Monitor for automatic execution"""
+        try:
+            # Only initialize if we have both executors
+            if not self.social_media_executor or not self.message_sender:
+                self.logger.warning("Skipping ApprovedFolderMonitor - executors not available")
+                return
+
+            self.approved_folder_monitor = ApprovedFolderMonitor(
+                base_dir=self.base_dir,
+                event_bus=self.event_bus,
+                audit_logger=self.audit_logger,
+                folder_manager=self.folder_manager,
+                social_media_executor=self.social_media_executor,
+                message_sender=self.message_sender,
+                logger=self.logger,
+                check_interval=30  # Check every 30 seconds
+            )
+
+            self.logger.info("ApprovedFolderMonitor initialized (will start with orchestrator)")
+
+        except Exception as e:
+            self.logger.error(f"Failed to initialize ApprovedFolderMonitor: {e}", exc_info=True)
 
     def _register_health_checks(self):
         """Register health checks for all components"""
@@ -578,6 +679,61 @@ class IntegrationOrchestrator:
                     'message': f'Autonomous executor error: {str(e)}'
                 }
 
+        # Approved Folder Monitor health check
+        def check_approved_folder_monitor():
+            try:
+                if self.approved_folder_monitor:
+                    status = self.approved_folder_monitor.get_status()
+                    if status.get('running') and status.get('thread_alive'):
+                        return {
+                            'status': ComponentStatus.HEALTHY,
+                            'message': f'Approved folder monitor operational (interval: {status.get("check_interval")}s)'
+                        }
+                    else:
+                        return {
+                            'status': ComponentStatus.DEGRADED,
+                            'message': 'Approved folder monitor not running'
+                        }
+                else:
+                    return {
+                        'status': ComponentStatus.DEGRADED,
+                        'message': 'Approved folder monitor not initialized'
+                    }
+            except Exception as e:
+                return {
+                    'status': ComponentStatus.UNHEALTHY,
+                    'message': f'Approved folder monitor error: {str(e)}'
+                }
+
+        # Folder Manager health check
+        def check_folder_manager():
+            try:
+                if self.folder_manager:
+                    stats = self.folder_manager.get_stats()
+                    pending = stats.get('pending_approval', 0)
+                    approved = stats.get('approved', 0)
+
+                    if pending + approved < 100:
+                        return {
+                            'status': ComponentStatus.HEALTHY,
+                            'message': f'Folder manager operational (Pending: {pending}, Approved: {approved})'
+                        }
+                    else:
+                        return {
+                            'status': ComponentStatus.DEGRADED,
+                            'message': f'High queue count (Pending: {pending}, Approved: {approved})'
+                        }
+                else:
+                    return {
+                        'status': ComponentStatus.UNHEALTHY,
+                        'message': 'Folder manager not initialized'
+                    }
+            except Exception as e:
+                return {
+                    'status': ComponentStatus.UNHEALTHY,
+                    'message': f'Folder manager error: {str(e)}'
+                }
+
         # Register all health checks
         self.health_monitor.register_health_check('state_manager', check_state_manager)
         self.health_monitor.register_health_check('skill_dispatcher', check_skill_dispatcher)
@@ -586,6 +742,8 @@ class IntegrationOrchestrator:
         self.health_monitor.register_health_check('filesystem_watcher', check_filesystem_watcher)
         self.health_monitor.register_health_check('system_resources', check_system_resources)
         self.health_monitor.register_health_check('autonomous_executor', check_autonomous_executor)
+        self.health_monitor.register_health_check('approved_folder_monitor', check_approved_folder_monitor)
+        self.health_monitor.register_health_check('folder_manager', check_folder_manager)
 
         self.logger.info("Health checks registered")
 
@@ -620,6 +778,22 @@ class IntegrationOrchestrator:
             except Exception as e:
                 self.logger.error(f"Error triggering report generation: {e}")
 
+        def on_file_moved_to_approved(data):
+            """Log when files are moved to Approved folder"""
+            filename = data.get('filename', 'unknown')
+            self.logger.info(f"File approved for execution: {filename}")
+
+        def on_file_moved_to_done(data):
+            """Log when files are successfully executed"""
+            filename = data.get('filename', 'unknown')
+            self.logger.info(f"File execution completed: {filename}")
+
+        def on_file_moved_to_failed(data):
+            """Log when files fail execution"""
+            filename = data.get('filename', 'unknown')
+            error = data.get('error', 'unknown error')
+            self.logger.warning(f"File execution failed: {filename} - {error}")
+
         # Subscribe to events
         self.event_bus.subscribe('skill_execution_started', log_skill_execution)
         self.event_bus.subscribe('skill_execution_completed', log_skill_completed)
@@ -627,6 +801,11 @@ class IntegrationOrchestrator:
 
         # Cross-domain integration: Accounting → Reporting
         self.event_bus.subscribe('accounting_transaction_added', on_accounting_transaction_added)
+
+        # Folder Manager events
+        self.event_bus.subscribe('file.moved.to.approved', on_file_moved_to_approved)
+        self.event_bus.subscribe('file.moved.to.done', on_file_moved_to_done)
+        self.event_bus.subscribe('file.moved.to.failed', on_file_moved_to_failed)
 
         self.logger.info("Event subscriptions configured")
 
@@ -673,6 +852,11 @@ class IntegrationOrchestrator:
         self.health_monitor.start()
         self.periodic_trigger.start()
         self.autonomous_executor.start()
+
+        # Start Approved Folder Monitor (Step 5)
+        if self.approved_folder_monitor:
+            self.approved_folder_monitor.start()
+            self.logger.info("ApprovedFolderMonitor started - automatic execution enabled")
 
         # Setup filesystem watchers (using PollingObserver for WSL2 compatibility)
         self.observer = PollingObserver()
@@ -731,6 +915,9 @@ class IntegrationOrchestrator:
         if self.observer:
             self.observer.stop()
             self.observer.join(timeout=5)
+
+        if self.approved_folder_monitor:
+            self.approved_folder_monitor.stop()
 
         if self.periodic_trigger:
             self.periodic_trigger.stop()

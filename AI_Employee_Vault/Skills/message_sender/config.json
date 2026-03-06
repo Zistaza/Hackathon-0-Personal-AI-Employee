@@ -1,0 +1,50 @@
+{
+  "platforms": {
+    "gmail": {
+      "enabled": true,
+      "auth_method": "oauth2",
+      "scopes": [
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.readonly"
+      ],
+      "credentials_file": "credentials.json",
+      "token_file": "gmail_token.json",
+      "max_attachments": 25,
+      "max_attachment_size_mb": 25
+    },
+    "whatsapp": {
+      "enabled": true,
+      "session_dir": "whatsapp",
+      "url": "https://web.whatsapp.com",
+      "selectors": {
+        "search_box": "[data-testid='chat-list-search'], [title='Search input textbox']",
+        "chat_item": "[data-testid='cell-frame-container']",
+        "message_box": "[data-testid='conversation-compose-box-input'], [role='textbox'][contenteditable='true']",
+        "send_button": "[data-testid='send'], button[aria-label*='Send']"
+      },
+      "timeouts": {
+        "page_load": 30000,
+        "search": 5000,
+        "message_send": 5000,
+        "qr_login": 120000
+      }
+    }
+  },
+  "retry": {
+    "max_attempts": 3,
+    "initial_delay": 5000,
+    "backoff_multiplier": 2
+  },
+  "browser": {
+    "headless": false,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  },
+  "logging": {
+    "screenshot_on_error": true,
+    "verbose": true
+  }
+}
